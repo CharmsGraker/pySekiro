@@ -15,7 +15,6 @@ import tensorflow._api.v2.compat.v1 as tf1
 from utils.count_down import CountDown
 
 
-
 # 训练一个episode
 def run_train_episode(agent, env, rpm):
     total_reward = 0
@@ -38,7 +37,7 @@ def run_train_episode(agent, env, rpm):
             (batch_obs, batch_action, batch_reward, batch_next_obs,
              batch_done) = rpm.sample(BATCH_SIZE)
             train_loss = agent.learn(batch_obs, batch_action, batch_reward,
-                                    batch_next_obs, batch_done)
+                                     batch_next_obs, batch_done)
             print("mse_loss: ", train_loss)
 
         total_reward += reward
@@ -56,7 +55,7 @@ def run_evaluate_episodes(agent, env, render=False):
         obs = env.reset()
         episode_reward = 0
         while True:
-            action = agent.predict(obs[np.newaxis,:,:,:])  # 预测动作，只选最优动作
+            action = agent.predict(obs[np.newaxis, :, :, :])  # 预测动作，只选最优动作
             obs, reward, done = env.step(action)
             episode_reward += reward
             if render:
@@ -90,11 +89,18 @@ def main():
 
         # 加载模型
         # save_path = './dqn_model.ckpt'
-        # agent.restore(save_path)
+
+        # 训练结束，保存模型
+        save_path = './dqn_model.ckpt'
+        agent.restore(save_path)
+
+        print("already now?")
+        CountDown(3)
 
         # 先往经验池里存一些数据，避免最开始训练的时候样本丰富度不够
         while len(rpm) < MEMORY_WARMUP_SIZE:
             run_train_episode(agent, env, rpm)
+            agent.save(save_path)
 
         max_episode = 2000
 
@@ -109,13 +115,5 @@ def main():
             # test part       render=True 查看显示效果
             eval_reward = run_evaluate_episodes(agent, env, render=False)
 
-        # 训练结束，保存模型
-        save_path = './dqn_model.ckpt'
-        agent.save(save_path)
-
-
-
-
 if __name__ == '__main__':
-    CountDown(3)
     main()

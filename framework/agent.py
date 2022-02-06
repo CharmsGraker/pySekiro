@@ -1,3 +1,5 @@
+import os.path
+
 import numpy as np
 
 import tensorflow._api.v2.compat.v1 as tf1
@@ -26,8 +28,21 @@ class GrakerAgent(object):
     def learn(self, obs, act, reward, next_obs, terminal):
         pass
 
-    def save(self, path):
-        pass
+    def save(self, checkpoint_dir):
+        checkpoint_dir = os.path.splitext(checkpoint_dir)[0]
+        return self.alg.save(checkpoint_dir, self.global_step)
+
+    def restore(self, path):
+        could_load, checkpoint_counter = self.alg.load(path)
+
+        if could_load:
+            self.global_step = checkpoint_counter + 1
+
+            print(" [*] Load SUCCESS")
+        else:
+            self.global_step = 0
+
+            print(" [!] Load failed...")
 
 
 class Agent(GrakerAgent):
@@ -83,12 +98,10 @@ class Agent(GrakerAgent):
         # terminal = tf1.convert_to_tensor(terminal, dtype='float32')
         logit = self.alg.learn(obs, act, reward, next_obs, terminal)
 
-
         # v_loss, _ = self.sess.run([self.mse_loss, self.optimizer], feed_dict={
         #     self.pred_value: pred_value,
         #     self.target: target
         # })
-
 
         # 训练一次网络
         return logit  # loss.numpy()[0]

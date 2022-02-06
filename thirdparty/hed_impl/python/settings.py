@@ -1,0 +1,1 @@
+arguments_strModel = 'bsds500'

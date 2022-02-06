@@ -18,19 +18,30 @@ class Algorithm:
         self.sess.run(tf1.global_variables_initializer())
         self.saver = tf1.train.Saver()
 
+    def save(self, checkpoint_dir,step):
+        checkpoint_dir = os.path.join(checkpoint_dir, self.model_dir)
+
+        if not os.path.exists(checkpoint_dir):
+            os.makedirs(checkpoint_dir)
+
+        self.saver.save(self.sess, os.path.join(checkpoint_dir, self.model_name + '.model'), global_step=step)
+
     def predict(self, obs):
         pass
 
     def learn(self, obs, action, reward, next_obs, terminal):
         pass
 
-    def load(self, checkpoint_dir):
+    def load(self, checkpoint_dir=None):
         """
         可能训练非常缓慢，或者说当前条件不允许一次性训练完。这个函数使得可以从上次check point(断点）处继续训练
         :param checkpoint_dir: 断点保存路径
         :return: flag:True/False,counter:last epoch
         """
         print(" [*] Reading checkpoints...")
+        if checkpoint_dir is None:
+            checkpoint_dir = self.checkpoint_dir
+
         checkpoint_dir = os.path.join(checkpoint_dir, self.model_dir)
 
         ckpt = tf1.train.get_checkpoint_state(checkpoint_dir)  # checkpoint file information
