@@ -33,7 +33,7 @@ class GrakerAgent(object):
         return self.alg.save(checkpoint_dir, self.global_step)
 
     def restore(self, path):
-        could_load, checkpoint_counter = self.alg.load(path)
+        could_load, checkpoint_counter = self.alg.load(os.path.splitext(path)[0])
 
         if could_load:
             self.global_step = checkpoint_counter + 1

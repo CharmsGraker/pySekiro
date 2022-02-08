@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 
 from thirdparty.api import HED_predict
+from utils.detection.detector import Detector
 
 
 def gamma_correction(img_original, gamma=0.8):
@@ -13,8 +14,9 @@ def gamma_correction(img_original, gamma=0.8):
     return res
 
 
-class BloodDetector:
+class BloodDetector(Detector):
     def __init__(self, low_tolerance, high_tolerance, name):
+        super().__init__()
         self.low_tolerance = low_tolerance
         self.high_tolerance = high_tolerance
 
@@ -29,9 +31,6 @@ class BloodDetector:
         self.name = name
         self.blood_capacity = None
 
-    def __call__(self, *args, **kwargs):
-        return self.detect(*args, **kwargs)
-
     def detect(self, img, show_window=False):
         """
         a BGR image
@@ -44,7 +43,7 @@ class BloodDetector:
                 self.accept(img)
             else:
                 self_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                blood_y = math.floor(4 / 5 * self_gray.shape[0])
+                blood_y = math.floor(6 / 7 * self_gray.shape[0])
                 height, width = img.shape[:2]
 
                 # if self.name == 'boss':
@@ -115,12 +114,18 @@ class BloodDetector:
         # cv2.Canny(self_gray_clip, 254, 255)
         return HED_predict(img)
 
-
-self_blood_detector = BloodDetector(71, 83, name='self')
-# self_blood_detector = BloodDetector([125,51,45], [127, 61,47], name='self')
-
+# this param is only take for mistake RGB as BGR
+self_blood_detector = BloodDetector(69, 83, name='self')
 boss_blood_detector = BloodDetector(50, 75, name='boss')
 
-# screen is RGB
-clip_screen = lambda screen, window: np.array(screen[window[1]:window[3]+1, window[0]:window[2]+1, :])
+# here is the correct BGR param
+# self_blood_detector = BloodDetector(50, 99, name='self')
+# boss_blood_detector = BloodDetector(40, 43, name='boss')
 
+
+# screen is RGB,  W,H,C
+def clip_screen(screen, window,data_format='HW'):
+    if data_format == 'WH':
+        return np.array(screen[window[0]:window[2],window[1]:window[3], :])
+    elif data_format == 'HW':
+        return np.array(screen[window[1]:window[3],window[0]:window[2], :])

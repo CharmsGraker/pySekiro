@@ -18,6 +18,8 @@ import random
 import collections
 import numpy as np
 
+from settings import logger
+
 
 class ReplayMemory(object):
     def __init__(self, max_size):
@@ -27,7 +29,13 @@ class ReplayMemory(object):
         self.buffer.append(exp)
 
     def sample(self, batch_size):
-        mini_batch = random.sample(self.buffer, batch_size)
+        mini_batch = None
+        if isinstance(self.buffer, collections.deque):
+            mini_batch = random.sample(self.buffer, batch_size)
+        elif isinstance(self.buffer, np.ndarray):
+            rand_idx = random.sample(range(self.buffer.shape[0]), batch_size)
+            mini_batch = self.buffer[rand_idx]
+
         obs_batch, action_batch, reward_batch, next_obs_batch, done_batch = [], [], [], [], []
 
         for idx, experience in enumerate(mini_batch):
@@ -48,3 +56,12 @@ class ReplayMemory(object):
 
     def __len__(self):
         return len(self.buffer)
+
+    def loadFrom(self, npy_path):
+        try:
+            self.buffer = np.load(npy_path, allow_pickle=True)
+            logger.info("success load history")
+            self.use_history = True
+        except Exception as e:
+            print(e)
+            self.use_history = False

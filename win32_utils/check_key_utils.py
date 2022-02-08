@@ -45,5 +45,7 @@ state_S = Win32KeySignal(ord("S"))
 state_D = Win32KeySignal(ord("D"))
 
 state_R = Win32KeySignal(ord("R"))
+state_Q = Win32KeySignal(ord('Q'))
+
 
 

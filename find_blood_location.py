@@ -50,7 +50,7 @@ while(True):
     #.reshape((printscreen_pil.size[1],printscreen_pil.size[0],3))
     #pil格式耗时太长
     
-    screen_gray = cv2.cvtColor(grabscreen.grab_screen(blood_window), cv2.COLOR_BGR2GRAY)#灰度图像收集
+    screen_gray = cv2.cvtColor(grabscreen.grab_screen(blood_window), cv2.COLOR_BGR2GRAY) #灰度图像收集
     # screen_reshape = cv2.resize(screen_gray,(96,86))
     self_blood = self_blood_count(screen_gray)
     boss_blood = boss_blood_count(screen_gray)
