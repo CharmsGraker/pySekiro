@@ -3,7 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-from settings import window_size, HEIGHT, WIDTH, pause_key
+from settings import window_size, HEIGHT, WIDTH, pause_key, obs_dim
 from strategy.actions import action_table
 from strategy.evaluate.evaluate_reward import judge_blood4reward
 from unit_test.fast_test import blood_window, boss_blood_offset_window, self_blood_offset_window, \
@@ -24,11 +24,6 @@ class Environment:
     def make(env_name, *arg, **kwargs):
         if env_name == 'Sekiro':
             return SekiroEnv(*arg, **kwargs)
-
-
-class Config:
-    def __init__(self, dict):
-        self.__dict__.update(dict)
 
 
 class PauseException(Exception):
@@ -56,9 +51,7 @@ class SekiroEnv:
         :return:
         """
         # give the original shape before input to the net
-        return Config({"state_w": 488,
-                       "state_h": 385,
-                       "state_d": 3})
+        return obs_dim
 
     def get_action_space(self):
         return len(action_table)

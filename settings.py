@@ -1,7 +1,15 @@
+from utils.config import Config
+
 DQN_model_path = "model_gpu"
 DQN_log_path = "logs_gpu/"
 WIDTH = 96
 HEIGHT = 88
+
+obs_dim = Config({"state_w": 488,
+                       "state_h": 385,
+                       "state_d": 3})
+
+act_dim = 18
 
 # the game window border
 border_offset = 30
