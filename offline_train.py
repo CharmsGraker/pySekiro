@@ -1,3 +1,4 @@
+import argparse
 import os.path
 
 import cv2
@@ -5,7 +6,6 @@ import numpy as np
 
 from settings import MEMORY_WARMUP_SIZE, LEARN_FREQ, BATCH_SIZE, GAMMA, LEARNING_RATE, MEMORY_SIZE, \
     sample_data_save_root, logger, obs_dim, act_dim
-from framework.environment import Environment
 from framework.model import Model
 from framework.algorithm import DQN
 from framework.agent import Agent
@@ -13,7 +13,6 @@ from framework.agent import Agent
 from framework.replay_memory import ReplayMemory
 import tensorflow._api.v2.compat.v1 as tf1
 
-from utils.count_down import CountDown
 
 # 训练一个episode
 def run_train_episode_offline(agent, rpm):
@@ -38,6 +37,7 @@ def run_train_episode_offline(agent, rpm):
         # maybe offline data not larger than MEMORY_WARMUP_SIZE
         if (len(rpm) > MEMORY_WARMUP_SIZE) == False:
             logger.debug("the offline data len {}/{} too short for train".format(len(rpm), MEMORY_WARMUP_SIZE))
+            raise Exception("too short data")
         total_reward += reward
         obs = next_obs
         if done:
@@ -90,8 +90,17 @@ def offline_main(obs_dim, act_dim, sampled_data_path=None):
             # eval_reward = run_evaluate_episodes(agent, render=False)
 
 
-if __name__ == '__main__':
-    filename = 'episode_2022_02_08_22_54-total_step-539.npy'
-    sampled_data = os.path.join(sample_data_save_root, filename)
+def parse_arg():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-file', default=None, type=str)
+    return parser.parse_args()
 
-    offline_main(sampled_data, obs_dim, act_dim)
+
+if __name__ == '__main__':
+    args = parse_arg()
+    file = args.file
+    if file is None:
+        filename = 'episode_2022_02_08_22_54-total_step-539.npy'
+        file = os.path.join(sample_data_save_root, filename)
+
+    offline_main(obs_dim, act_dim, file)
