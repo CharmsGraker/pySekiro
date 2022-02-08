@@ -9,6 +9,9 @@ obs_dim = Config({"state_w": 488,
                   "state_h": 385,
                   "state_d": 3})
 
+VGG_MEAN = [103.939, 116.779, 123.68]
+
+
 act_dim = 18
 
 # the game window border
@@ -50,7 +53,7 @@ paused = True
 LEARN_FREQ = 5  # 训练频率，不需要每一个step都learn，攒一些新增经验后再learn，提高效率
 MEMORY_SIZE = 20000  # replay memory的大小，越大越占用内存
 MEMORY_WARMUP_SIZE = 1800  # 2000  # replay_memory 里需要预存一些经验数据，再从里面sample一个batch的经验让agent去learn
-BATCH_SIZE = 80  # 每次给agent learn的数据数量，从replay memory随机里sample一批数据出来
+BATCH_SIZE = 1  # 每次给agent learn的数据数量，从replay memory随机里sample一批数据出来
 LEARNING_RATE = 0.0005  # 学习率
 GAMMA = 0.99  # reward 的衰减因子，一般取 0.9 到 0.999 不等
 

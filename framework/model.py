@@ -3,11 +3,13 @@ import tensorflow._api.v2.compat.v1 as tf
 
 from _config import scope, train_model_scope
 from net import DQN
+from net.vgg19 import Vgg19
 
 
 class Model(object):
     def __init__(self, sess, obs_dim, act_dim):
         self.sess = sess
+        self.vgg = Vgg19()
 
         self.obs_dim = obs_dim
         self.act_dim = act_dim
@@ -23,12 +25,16 @@ class Model(object):
 
     def base_Q_net(self, x_init, reuse=True):
         with tf.variable_scope(self.base_Q_net_scope, reuse=reuse):
-            Q = DQN.Q_net(x_init, self.obs_dim, self.act_dim, self.base_Q_net_scope)
+            self.vgg.build(x_init)
+            real_feature_map = self.vgg.conv4_4_no_activation
+            Q = DQN.Q_net(real_feature_map, self.obs_dim, self.act_dim, self.base_Q_net_scope)
             return Q.Q_value
 
     def target_Q_net(self, x_init, reuse=True):
         with tf.variable_scope(self.target_Q_net_scope, reuse=reuse):
-            Q = DQN.Q_net(x_init, self.obs_dim, self.act_dim, self.target_Q_net_scope)
+            self.vgg.build(x_init)
+            real_feature_map = self.vgg.conv4_4_no_activation
+            Q = DQN.Q_net(real_feature_map, self.obs_dim, self.act_dim, self.target_Q_net_scope)
             return Q.Q_value
 
     def clone(self):

@@ -17,6 +17,7 @@
 import random
 import collections
 import numpy as np
+from tqdm import tqdm
 
 from settings import logger
 
@@ -60,8 +61,53 @@ class ReplayMemory(object):
     def loadFrom(self, npy_path):
         try:
             self.buffer = np.load(npy_path, allow_pickle=True)
+            state_imgs = np.array(list(self.buffer[:, 0]))
+            global VGG_MEAN
+            VGG_MEAN = get_mean(state_imgs)
             logger.info("success load history")
             self.use_history = True
         except Exception as e:
             print(e)
             self.use_history = False
+
+
+def separate_channel(img):
+    """
+    matplotlib 色彩空间是RGB
+    存储数据时是BGR
+    :param img:
+    :return:
+    """
+    assert len(img.shape) == 3
+    B = img[..., 0].mean()
+    G = img[..., 1].mean()
+    R = img[..., 2].mean()
+    return B, G, R
+
+
+def get_mean(img_arrays):
+    """
+        请进入tools目录下运行
+    :param dataset_name:
+    :return:
+    """
+    # 如果是以进入tools目录运行 则os.getcwd() 为 D:\Gary\Program\GitHubProject\AnimeGAN\tools
+    # print('os.pardir: ', os.pardir) # 受启动方式有很大影响
+
+    # 用于查找
+    image_num = len(img_arrays)
+    print('image_num:', image_num)
+
+    B_total = 0
+    G_total = 0
+    R_total = 0
+    for f in tqdm(img_arrays):
+        bgr = separate_channel(f)
+        B_total += bgr[0]
+        G_total += bgr[1]
+        R_total += bgr[2]
+
+    B_mean, G_mean, R_mean = B_total / image_num, G_total / image_num, R_total / image_num
+    mean = (B_mean + G_mean + R_mean) / 3
+
+    return mean - B_mean, mean - G_mean, mean - R_mean

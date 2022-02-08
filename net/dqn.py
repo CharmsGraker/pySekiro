@@ -1,6 +1,6 @@
 import tf_slim
 
-from ops.functional import max_pool_2x2, Conv2D, DownSample
+from ops.functional import max_pool_2x2, Conv2D, DownSample, layer_norm, Conv2DNormLReLU, Separable_conv2d
 import tensorflow._api.v2.compat.v1 as tf
 
 tf.disable_v2_behavior()
@@ -13,23 +13,16 @@ class Q_net(object):
         self.act_dim = act_dim
 
         with tf.variable_scope(scope):
-            inputs = DownSample(inputs, 32)
-            inputs = tf.nn.relu(Conv2D(inputs, 32))
-            inputs = Conv2D(inputs, filters=32, kernel_size=1)
-            inputs = tf.nn.max_pool2d(inputs, 3, strides=2, padding='VALID')
+            inputs = Conv2DNormLReLU(inputs, 64)
+            inputs = Conv2DNormLReLU(inputs, 64)
+            inputs = Separable_conv2d(inputs, 128, strides=2) + DownSample(inputs, 128)
 
-            inputs = DownSample(inputs, 32)
+            inputs = Conv2DNormLReLU(inputs, 128)
+            inputs = Separable_conv2d(inputs, 128)
+            inputs = Separable_conv2d(inputs, 256, strides=2) + DownSample(inputs, 256)
 
-            inputs = Conv2D(inputs, filters=64, kernel_size=1)
-            inputs = tf.nn.relu(Conv2D(inputs, filters=16))
-            inputs = tf.nn.max_pool2d(inputs, 3, strides=2, padding='VALID')
-
-            inputs = tf.nn.relu(Conv2D(inputs, filters=32))
-            inputs = tf.nn.max_pool2d(inputs, 3, strides=2, padding='VALID')
-            inputs = tf.nn.relu(Conv2D(inputs, filters=32))
-
-            inputs = tf.nn.relu(Conv2D(inputs, filters=16))
-
+            inputs = Conv2DNormLReLU(inputs, 32)
+            inputs = Conv2DNormLReLU(inputs, 16)
             inputs = tf_slim.flatten(inputs)
             inputs = tf_slim.fully_connected(inputs, self.act_dim)
 

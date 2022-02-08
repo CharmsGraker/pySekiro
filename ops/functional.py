@@ -1,7 +1,9 @@
 # the function that give the weight initial value
 import tensorflow._api.v2.compat.v1 as tf
 import tf_slim as slim
+
 tf.disable_v2_behavior()
+
 
 def lrelu(x, alpha=0.2, scope=None):
     return tf.nn.leaky_relu(x, alpha)
@@ -85,3 +87,31 @@ def Conv2D(inputs, filters, kernel_size=3, strides=1, padding='VALID', Use_bias=
 
 def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+
+
+def layer_norm(x, scope='layer_norm'):
+    # return LayerNormalization(x,
+    #                           center=True, scale=True,
+    #                           scope=scope)
+    return slim.layer_norm(x,
+                           center=True, scale=True,
+                           scope=scope)
+
+def instance_norm(x, scope='instance_norm'):
+    """
+        instance normal 对于每一个样本，沿深度方向进行normalization
+        https://zhuanlan.zhihu.com/p/32610458
+    """
+    # return InstanceNormalization(x,
+    #                              epsilon=1e-05,
+    #                              center=True, scale=True,
+    #                              scope=scope)
+    return slim.instance_norm(x,
+                              epsilon=1e-05,
+                              center=True, scale=True,
+                              scope=scope)
+
+def Conv2DNormLReLU(inputs, filters, kernel_size=3, strides=1, padding='VALID', Use_bias=None):
+    x = Conv2D(inputs, filters, kernel_size, strides, padding=padding, Use_bias=Use_bias)
+    x = instance_norm(x, scope=None)
+    return lrelu(x)

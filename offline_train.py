@@ -15,7 +15,7 @@ import tensorflow._api.v2.compat.v1 as tf1
 
 
 # 训练一个episode
-def run_train_episode_offline(agent, rpm):
+def run_train_episode_offline(agent, simulate_env,rpm):
     total_reward = 0
     step = 0
     done = 0
@@ -24,6 +24,8 @@ def run_train_episode_offline(agent, rpm):
     next_obs = None
     while True:
         step += 1
+
+        action,next_obs, reward, done = simulate_env.step(step)
 
         # train model
         if (len(rpm) > MEMORY_WARMUP_SIZE) and (step % LEARN_FREQ == 0):
@@ -34,6 +36,7 @@ def run_train_episode_offline(agent, rpm):
             train_loss = agent.learn(batch_obs, batch_action, batch_reward,
                                      batch_next_obs, batch_done)
             print("mse_loss: ", train_loss)
+
         # maybe offline data not larger than MEMORY_WARMUP_SIZE
         if (len(rpm) > MEMORY_WARMUP_SIZE) == False:
             logger.debug("the offline data len {}/{} too short for train".format(len(rpm), MEMORY_WARMUP_SIZE))
@@ -73,21 +76,21 @@ def offline_main(obs_dim, act_dim, sampled_data_path=None):
 
         # 先往经验池里存一些数据，避免最开始训练的时候样本丰富度不够
         while len(rpm) < MEMORY_WARMUP_SIZE:
-            run_train_episode_offline(agent, rpm)
+            run_train_episode_offline(agent, simulate_env,rpm)
             agent.save(save_path)
 
         max_episode = 2000
 
-        # start train
-        episode = 0
-        while episode < max_episode:  # 训练max_episode个回合，test部分不计算入episode数量
-            # train part
-            for i in range(50):
-                total_reward = run_train_episode_offline(agent, rpm)
-                episode += 1
-
-            # test part       render=True 查看显示效果
-            # eval_reward = run_evaluate_episodes(agent, render=False)
+        # # start train
+        # episode = 0
+        # while episode < max_episode:  # 训练max_episode个回合，test部分不计算入episode数量
+        #     # train part
+        #     for i in range(50):
+        #         total_reward = run_train_episode_offline(agent, rpm)
+        #         episode += 1
+        #
+        #     # test part       render=True 查看显示效果
+        #     # eval_reward = run_evaluate_episodes(agent, render=False)
 
 
 def parse_arg():
